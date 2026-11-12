@@ -67,6 +67,15 @@
       .leaflet-control-zoom{margin-bottom:49px!important}
     }
     @media(max-width:390px){.logo{font-size:17px;gap:6px}.logo-emoji{width:32px;height:32px;font-size:18px}.topline{height:55px}.map-legend{display:none}}
+
+    /* Robuste sichtbare Kartenmarker (Leaflet SVG + permanent numerische Labels) */
+    .leaflet-tooltip.map-pin-number{
+      background:transparent;border:0;box-shadow:none;padding:0;
+      font:800 12px/1 'DM Sans',sans-serif;color:#fff;white-space:nowrap;
+      pointer-events:none;text-align:center;margin:0!important;
+    }
+    .leaflet-tooltip.map-pin-number:before{display:none!important}
+    .leaflet-interactive{cursor:pointer}
   </style>
   <link rel="stylesheet" href="./votes.css">
 </head>
@@ -143,16 +152,31 @@
       map=L.map('map',{zoomControl:false,scrollWheelZoom:false,dragging:!window.matchMedia('(max-width:760px) and (pointer:coarse)').matches,scrollWheelZoom:false,touchZoom:true,zoomSnap:.5}).setView([51.336,12.369],13);
       L.control.zoom({position:'bottomright'}).addTo(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).addTo(map);
-      const icon=(n,active=false,hotelPin=false)=>L.divIcon({className:'',html:`<div class="pin-wrap ${active?'active':''} ${hotelPin?'hotel-pin':''}"><span class="pin-num">${hotelPin?'⌂':String(n).padStart(2,'0')}</span></div>`,iconSize:[hotelPin?43:active?44:38,hotelPin?43:active?44:38],iconAnchor:[hotelPin?21:active?22:19,hotelPin?37:active?38:33]});
-      const h=L.marker([hotel.lat,hotel.lon],{icon:icon('',false,true)}).addTo(map).bindPopup('<b>🏨 ibis Leipzig City</b><br>Reichsstraße 17 · Ausgangspunkt');
-      restaurants.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:icon(p.id)}).addTo(map);m.bindPopup(`<div class="popup-title">${p.name}</div><div class="popup-sub">${p.cuisine} · ${p.price}</div><a class="popup-link" href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a><a class="popup-link" style="margin-left:12px" href="#spot-${p.id}">Zur Liste ↓</a>`);m.on('click',()=>selectSpot(p.id,false));markers[p.id]=m;});
+      // SVG-Kreismarker werden von Leaflet direkt gerendert: keine Icon-Dateien
+      // und keine komplexen CSS-DivIcons nötig. Nummern bleiben stets sichtbar.
+      const pointStyle=(active=false,isHotel=false)=>({
+        radius:active?18:15, color:'#fffefa', weight:3,
+        fillColor:isHotel?'#224c42':active?'#fc7355':'#212725',
+        fillOpacity:1, opacity:1, interactive:true, bubblingMouseEvents:false
+      });
+      const hotelMarker=L.circleMarker([hotel.lat,hotel.lon],pointStyle(false,true))
+        .addTo(map)
+        .bindTooltip('⌂',{permanent:true,direction:'center',className:'map-pin-number',opacity:1})
+        .bindPopup('<b>🏨 ibis Leipzig City</b><br>Reichsstraße 17 · Ausgangspunkt');
+      restaurants.forEach(p=>{
+        const m=L.circleMarker([p.lat,p.lon],pointStyle()).addTo(map);
+        m.bindTooltip(String(p.id).padStart(2,'0'),{permanent:true,direction:'center',className:'map-pin-number',opacity:1});
+        m.bindPopup(`<div class="popup-title">${p.name}</div><div class="popup-sub">${p.cuisine} · ${p.price}</div><a class="popup-link" href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a><a class="popup-link" style="margin-left:12px" href="#spot-${p.id}">Zur Liste ↓</a>`);
+        m.on('click',()=>selectSpot(p.id,false));
+        markers[p.id]=m;
+      });
     } else {
       document.getElementById('map').innerHTML='<div style="padding:70px 25px;text-align:center;color:#53625a">Karte nicht verfügbar. Die Restaurantlinks funktionieren weiterhin.</div>';
     }
     function getList(){let a=restaurants.filter(p=>filter==='all'||(filter==='hotel'&&p.hotel<=2.5)||(filter==='dom'&&p.dom<=2)||(filter==='cheap'&&p.min<=15));if(sort==='hotel')a.sort((x,y)=>x.hotel-y.hotel);if(sort==='dom')a.sort((x,y)=>x.dom-y.dom);if(sort==='price')a.sort((x,y)=>x.min-y.min);return a;}
     function render(fitMap=false){shown=getList();const root=document.getElementById('cards');document.getElementById('count').textContent=shown.length+' Restaurant'+(shown.length===1?'':'s');document.getElementById('map-note').textContent=shown.length+' Restaurants · Leipzig';root.innerHTML=shown.length?shown.map(p=>`<article class="food-card ${selected===p.id?'selected':''}" id="spot-${p.id}" data-id="${p.id}" tabindex="0" role="button" aria-label="${p.name} auf der Karte zeigen"><div class="card-heading"><span class="num">${String(p.id).padStart(2,'0')}</span><div class="card-main"><h3>${p.name}</h3><div class="tagline">${p.cuisine}</div></div><span class="country" aria-hidden="true">${p.country}</span></div><p class="description">${p.detail}</p><div class="details"><div><strong>${p.price}</strong><small>Preis pro Person</small></div><div><strong>${fmtKm(p.dom)}</strong><small>von Domdidom</small></div><div><strong>${fmtKm(p.hotel)}</strong><small>vom Hotel</small></div></div><div class="actions"><a href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">↗ Google Maps</a><a class="secondary" href="${directions(p)}" target="_blank" rel="noopener noreferrer">↗ Fußweg ab Hotel</a></div></article>`).join(''):'<div class="no-results">Keine Restaurants für diesen Filter.</div>';
       root.querySelectorAll('.food-card').forEach(c=>{c.addEventListener('click',e=>{if(e.target.closest('a'))return;selectSpot(Number(c.dataset.id),true)});c.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('a')){e.preventDefault();selectSpot(Number(c.dataset.id),true)}})});
-      if(map){const allMarkers=[L.latLng(hotel.lat,hotel.lon)];restaurants.forEach(p=>{const m=markers[p.id];const visible=shown.some(q=>q.id===p.id);if(visible){m.addTo(map);allMarkers.push(L.latLng(p.lat,p.lon))}else map.removeLayer(m);m.setIcon(L.divIcon({className:'',html:`<div class="pin-wrap ${selected===p.id?'active':''}"><span class="pin-num">${String(p.id).padStart(2,'0')}</span></div>`,iconSize:[selected===p.id?44:38,selected===p.id?44:38],iconAnchor:[selected===p.id?22:19,selected===p.id?38:33]}));});if(fitMap&&allMarkers.length>1){map.invalidateSize();map.fitBounds(L.latLngBounds(allMarkers),{padding:[34,34],maxZoom:14,animate:false});}}
+      if(map){const allMarkers=[L.latLng(hotel.lat,hotel.lon)];restaurants.forEach(p=>{const m=markers[p.id];const visible=shown.some(q=>q.id===p.id);if(visible){m.addTo(map);allMarkers.push(L.latLng(p.lat,p.lon))}else map.removeLayer(m);m.setStyle(pointStyle(selected===p.id));if(selected===p.id)m.bringToFront();});if(fitMap&&allMarkers.length>1){map.invalidateSize();map.fitBounds(L.latLngBounds(allMarkers),{padding:[34,34],maxZoom:14,animate:false});}}
     }
     function selectSpot(id,scroll){selected=id;render();const p=restaurants.find(p=>p.id===id);if(map&&p){map.setView([p.lat,p.lon],window.matchMedia('(max-width:760px)').matches?14:15,{animate:true});markers[id].openPopup()}if(scroll&&window.matchMedia('(max-width:760px)').matches)document.querySelector('.map-panel').scrollIntoView({behavior:'smooth',block:'center'});}
     document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;selected=null;render(true)}));
