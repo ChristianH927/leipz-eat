@@ -11,7 +11,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxv0NVuVYJ7sE6zVQH8+Z2I=" crossorigin="">
   <style>
     :root{--ink:#212725;--muted:#75807a;--bg:#f7f6f2;--surface:#fffefa;--accent:#fc7355;--accent-dark:#d85236;--forest:#224c42;--line:#e8e8e2;--radius:24px;--shadow:0 9px 25px rgba(30,38,34,.045)}
     *{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 'DM Sans',sans-serif} button,select,input{font:inherit} button,a{-webkit-tap-highlight-color:transparent}
@@ -76,6 +75,22 @@
     }
     .leaflet-tooltip.map-pin-number:before{display:none!important}
     .leaflet-interactive{cursor:pointer}
+
+    /* Alternative: echte eingebettete Google Maps / OpenStreetMap ohne Leaflet */
+    .map-panel{background:#e8ece7}
+    #place-map{position:absolute;inset:0;width:100%;height:100%;border:0;background:#e8ece7;display:block}
+    .map-overlay{max-width:min(68%,330px);pointer-events:none;z-index:10}
+    .map-overlay b{font-size:13px;overflow-wrap:anywhere}
+    .map-overlay small{display:block}
+    .map-actions{z-index:11;bottom:47px}
+    .map-fallback{position:absolute;bottom:10px;left:12px;right:12px;z-index:11;font-size:10px;color:#56675c;background:#fffefaeb;border-radius:8px;padding:5px 9px;width:max-content;max-width:calc(100% - 24px);line-height:1.3}
+    .map-fallback a{color:#235d45;font-weight:800}
+    @media(max-width:760px){
+      .map-actions{bottom:50px;left:9px}
+      .map-actions button,.map-actions a{font-size:11px;padding:9px 10px}
+      .map-overlay{top:10px;left:10px}
+      .map-fallback{left:9px;right:9px;bottom:10px;font-size:9px}
+    }
   </style>
   <link rel="stylesheet" href="./votes.css">
 </head>
@@ -87,13 +102,17 @@
   </header>
   <div class="wrap">
     <div class="layout">
-      <div class="map-panel" aria-label="Interaktive Karte mit Restaurants und Hotel">
-        <div id="map"></div>
-        <div class="map-overlay"><b>🗺️ Leipzig Food Map</b><small id="map-note">8 Restaurants · Leipzig</small></div>
-        <div class="map-legend"><span><span class="legend-mark"></span> Restaurant</span><span><span class="legend-mark hotel"></span> Hotel</span></div>
-        <div class="map-actions"><button id="map-reset" type="button" title="Alle Restaurants auf der Karte anzeigen">◎ Alle zeigen</button><button id="map-gesture" type="button" aria-pressed="false">✋ Karte bewegen</button><a href="#restaurants">☰ Liste</a></div>
+      <div class="map-panel" aria-label="Karte für das gewählte Restaurant">
+        <iframe id="place-map" title="Karte des ausgewählten Restaurants" src="https://maps.google.com/maps?q=Kleiner%20Kaukasus%2C%20Karl-Heine-Stra%C3%9Fe%2093b%2C%20Leipzig&amp;z=15&amp;output=embed" loading="eager" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+        <div class="map-overlay"><b id="map-selected">01 · Kleiner Kaukasus</b><small id="map-note">Google Maps · Standort anzeigen</small></div>
+        <div class="map-actions">
+          <button type="button" id="map-provider" aria-label="Kartenanbieter wechseln">↔ OpenStreetMap</button>
+          <a id="map-external" href="https://www.google.com/maps/search/?api=1&amp;query=Kleiner%20Kaukasus%20Leipzig" target="_blank" rel="noopener noreferrer">↗ Google Maps</a>
+          <a href="#restaurants">☰ Liste</a>
+        </div>
+        <div class="map-fallback">Wenn die eingebettete Karte nicht lädt: <a id="map-fallback-link" href="https://www.google.com/maps/search/?api=1&amp;query=Kleiner%20Kaukasus%20Leipzig" target="_blank" rel="noopener noreferrer">Standort direkt in Google Maps öffnen</a></div>
       </div>
-      <section class="list-panel" id="restaurants" aria-label="Restaurantliste">
+            <section class="list-panel" id="restaurants" aria-label="Restaurantliste">
         <div class="list-heading"><div><h1>8 Restaurants in Leipzig</h1><p>Preise und Wege ab Hotel und Domdidom</p></div></div>
         <div class="list-top"><b id="count">8 Restaurants</b><select class="sort" id="sort" aria-label="Sortierung"><option value="default">Unsere Reihenfolge ▾</option><option value="hotel">Distanz: Hotel</option><option value="dom">Distanz: Domdidom</option><option value="price">Preis aufsteigend</option></select></div>
         <div class="filters" role="group" aria-label="Restaurants filtern"><button class="chip active" data-filter="all">Alle 8</button><button class="chip" data-filter="hotel">Nähe Hotel</button><button class="chip" data-filter="dom">Nähe Domdidom</button><button class="chip" data-filter="cheap">Bis 15 €</button></div>
@@ -127,11 +146,10 @@
     </section>
     <footer class="footer"><span>© Leipzig Bites · Privater Restaurant-Guide · Preise und Entfernungen sind unverbindliche Richtwerte.</span><span>Kartendaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> · Navigation über Google Maps</span></footer>
   </div>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script>
     'use strict';
-    // Domdidoms Privatadresse wird bewusst nicht gespeichert oder angezeigt.
-    // Die Vergleichsentfernungen sind statische Schätzungen, keine live berechneten Fußwege.
+    // Bewusst ohne Leaflet oder eigene Kartenmarker: die Kartenanbieter
+    // stellen die Standortmarkierung vollständig selbst dar.
     const hotel = {name:'ibis Leipzig City', address:'Reichsstraße 17, 04109 Leipzig', lat:51.342686, lon:12.37634};
     const restaurants = [
       {id:1,name:'Kleiner Kaukasus',country:'🇬🇪',cuisine:'Georgisch',detail:'Khachapuri & georgisches Streetfood',price:'6–10 €',min:6,hotel:5,dom:2,address:'Karl-Heine-Straße 93b, 04229 Leipzig',lat:51.3313,lon:12.3235},
@@ -147,57 +165,75 @@
     const googleSearch = p => 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.name+' '+p.address);
     const directions = p => 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(hotel.address)+'&destination='+encodeURIComponent(p.name+' '+p.address)+'&travelmode=walking';
     const fmtKm = n => '~'+String(n).replace('.',',')+' km';
-    let filter='all',sort='default',selected=null,shown=restaurants.slice(),map,markers={};
-    if (window.L){
-      map=L.map('map',{zoomControl:false,scrollWheelZoom:false,dragging:!window.matchMedia('(max-width:760px) and (pointer:coarse)').matches,scrollWheelZoom:false,touchZoom:true,zoomSnap:.5}).setView([51.336,12.369],13);
-      L.control.zoom({position:'bottomright'}).addTo(map);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).addTo(map);
-      // SVG-Kreismarker werden von Leaflet direkt gerendert: keine Icon-Dateien
-      // und keine komplexen CSS-DivIcons nötig. Nummern bleiben stets sichtbar.
-      const pointStyle=(active=false,isHotel=false)=>({
-        radius:active?18:15, color:'#fffefa', weight:3,
-        fillColor:isHotel?'#224c42':active?'#fc7355':'#212725',
-        fillOpacity:1, opacity:1, interactive:true, bubblingMouseEvents:false
-      });
-      const hotelMarker=L.circleMarker([hotel.lat,hotel.lon],pointStyle(false,true))
-        .addTo(map)
-        .bindTooltip('⌂',{permanent:true,direction:'center',className:'map-pin-number',opacity:1})
-        .bindPopup('<b>🏨 ibis Leipzig City</b><br>Reichsstraße 17 · Ausgangspunkt');
-      restaurants.forEach(p=>{
-        const m=L.circleMarker([p.lat,p.lon],pointStyle()).addTo(map);
-        m.bindTooltip(String(p.id).padStart(2,'0'),{permanent:true,direction:'center',className:'map-pin-number',opacity:1});
-        m.bindPopup(`<div class="popup-title">${p.name}</div><div class="popup-sub">${p.cuisine} · ${p.price}</div><a class="popup-link" href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a><a class="popup-link" style="margin-left:12px" href="#spot-${p.id}">Zur Liste ↓</a>`);
-        m.on('click',()=>selectSpot(p.id,false));
-        markers[p.id]=m;
-      });
-    } else {
-      document.getElementById('map').innerHTML='<div style="padding:70px 25px;text-align:center;color:#53625a">Karte nicht verfügbar. Die Restaurantlinks funktionieren weiterhin.</div>';
+
+    let filter='all',sort='default',selected=1,provider='google';
+    const mapFrame=document.getElementById('place-map');
+    const mapTitle=document.getElementById('map-selected');
+    const mapNote=document.getElementById('map-note');
+    const mapExternal=document.getElementById('map-external');
+    const mapFallbackLink=document.getElementById('map-fallback-link');
+    const providerButton=document.getElementById('map-provider');
+    function embedUrl(p){
+      if(provider==='google')return 'https://maps.google.com/maps?q='+encodeURIComponent(p.name+', '+p.address)+'&z=15&output=embed';
+      const west=(p.lon-.014).toFixed(6),east=(p.lon+.014).toFixed(6);
+      const south=(p.lat-.0085).toFixed(6),north=(p.lat+.0085).toFixed(6);
+      return 'https://www.openstreetmap.org/export/embed.html?bbox='+encodeURIComponent(west+','+south+','+east+','+north)+
+        '&layer=mapnik&marker='+encodeURIComponent(p.lat+','+p.lon);
     }
-    function getList(){let a=restaurants.filter(p=>filter==='all'||(filter==='hotel'&&p.hotel<=2.5)||(filter==='dom'&&p.dom<=2)||(filter==='cheap'&&p.min<=15));if(sort==='hotel')a.sort((x,y)=>x.hotel-y.hotel);if(sort==='dom')a.sort((x,y)=>x.dom-y.dom);if(sort==='price')a.sort((x,y)=>x.min-y.min);return a;}
-    function render(fitMap=false){shown=getList();const root=document.getElementById('cards');document.getElementById('count').textContent=shown.length+' Restaurant'+(shown.length===1?'':'s');document.getElementById('map-note').textContent=shown.length+' Restaurants · Leipzig';root.innerHTML=shown.length?shown.map(p=>`<article class="food-card ${selected===p.id?'selected':''}" id="spot-${p.id}" data-id="${p.id}" tabindex="0" role="button" aria-label="${p.name} auf der Karte zeigen"><div class="card-heading"><span class="num">${String(p.id).padStart(2,'0')}</span><div class="card-main"><h3>${p.name}</h3><div class="tagline">${p.cuisine}</div></div><span class="country" aria-hidden="true">${p.country}</span></div><p class="description">${p.detail}</p><div class="details"><div><strong>${p.price}</strong><small>Preis pro Person</small></div><div><strong>${fmtKm(p.dom)}</strong><small>von Domdidom</small></div><div><strong>${fmtKm(p.hotel)}</strong><small>vom Hotel</small></div></div><div class="actions"><a href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">↗ Google Maps</a><a class="secondary" href="${directions(p)}" target="_blank" rel="noopener noreferrer">↗ Fußweg ab Hotel</a></div></article>`).join(''):'<div class="no-results">Keine Restaurants für diesen Filter.</div>';
-      root.querySelectorAll('.food-card').forEach(c=>{c.addEventListener('click',e=>{if(e.target.closest('a'))return;selectSpot(Number(c.dataset.id),true)});c.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('a')){e.preventDefault();selectSpot(Number(c.dataset.id),true)}})});
-      if(map){const allMarkers=[L.latLng(hotel.lat,hotel.lon)];restaurants.forEach(p=>{const m=markers[p.id];const visible=shown.some(q=>q.id===p.id);if(visible){m.addTo(map);allMarkers.push(L.latLng(p.lat,p.lon))}else map.removeLayer(m);m.setStyle(pointStyle(selected===p.id));if(selected===p.id)m.bringToFront();});if(fitMap&&allMarkers.length>1){map.invalidateSize();map.fitBounds(L.latLngBounds(allMarkers),{padding:[34,34],maxZoom:14,animate:false});}}
+    function updateMap(){
+      const p=restaurants.find(x=>x.id===selected)||restaurants[0];
+      const next=embedUrl(p);
+      if(mapFrame.getAttribute('src')!==next)mapFrame.src=next;
+      mapFrame.title='Karte: '+p.name+', Leipzig';
+      mapTitle.textContent=String(p.id).padStart(2,'0')+' · '+p.name;
+      mapNote.textContent=provider==='google'?'Google Maps · Standort':'OpenStreetMap · Standort';
+      const url=googleSearch(p);
+      mapExternal.href=url;
+      mapFallbackLink.href=url;
+      providerButton.textContent=provider==='google'?'↔ OpenStreetMap':'↔ Google Maps';
     }
-    function selectSpot(id,scroll){selected=id;render();const p=restaurants.find(p=>p.id===id);if(map&&p){map.setView([p.lat,p.lon],window.matchMedia('(max-width:760px)').matches?14:15,{animate:true});markers[id].openPopup()}if(scroll&&window.matchMedia('(max-width:760px)').matches)document.querySelector('.map-panel').scrollIntoView({behavior:'smooth',block:'center'});}
-    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;selected=null;render(true)}));
-    document.getElementById('sort').addEventListener('change',e=>{sort=e.target.value;render()});
-    document.getElementById('share').addEventListener('click',async()=>{const data={title:'Leipzig Bites – Food Map',text:'8 besondere Restaurants in Leipzig mit Karte und Preisvergleich',url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);const b=document.querySelector('#share span');if(b){const before=b.textContent;b.textContent='Link kopiert ✓';setTimeout(()=>b.textContent=before,2200)}}}catch(e){if(e.name!=='AbortError')alert('Bitte den Link aus der Adresszeile teilen.')}});
-    document.getElementById('map-reset').addEventListener('click',()=>{selected=null;render(true);if(map)map.closePopup();});
-    const gestureButton=document.getElementById('map-gesture');
-    if(map) {
-      gestureButton.addEventListener('click',()=>{
-        const enabled=!map.dragging.enabled();
-        enabled?map.dragging.enable():map.dragging.disable();
-        gestureButton.setAttribute('aria-pressed',String(enabled));
-        gestureButton.textContent=enabled?'✓ Karte fixieren':'✋ Karte bewegen';
+    function getList(){
+      let a=restaurants.filter(p=>filter==='all'||(filter==='hotel'&&p.hotel<=2.5)||(filter==='dom'&&p.dom<=2)||(filter==='cheap'&&p.min<=15));
+      if(sort==='hotel')a.sort((x,y)=>x.hotel-y.hotel);
+      if(sort==='dom')a.sort((x,y)=>x.dom-y.dom);
+      if(sort==='price')a.sort((x,y)=>x.min-y.min);
+      return a;
+    }
+    function render(){
+      const shown=getList();
+      const root=document.getElementById('cards');
+      document.getElementById('count').textContent=shown.length+' Restaurant'+(shown.length===1?'':'s');
+      if(!shown.some(p=>p.id===selected))selected=shown[0]?.id||1;
+      root.innerHTML=shown.length?shown.map(p=>`<article class="food-card ${selected===p.id?'selected':''}" id="spot-${p.id}" data-id="${p.id}" tabindex="0" role="button" aria-label="${p.name} auf der Karte anzeigen"><div class="card-heading"><span class="num">${String(p.id).padStart(2,'0')}</span><div class="card-main"><h3>${p.name}</h3><div class="tagline">${p.cuisine}</div></div><span class="country" aria-hidden="true">${p.country}</span></div><p class="description">${p.detail}</p><div class="details"><div><strong>${p.price}</strong><small>Preis pro Person</small></div><div><strong>${fmtKm(p.dom)}</strong><small>von Domdidom</small></div><div><strong>${fmtKm(p.hotel)}</strong><small>vom Hotel</small></div></div><div class="actions"><a href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">↗ Google Maps</a><a class="secondary" href="${directions(p)}" target="_blank" rel="noopener noreferrer">↗ Fußweg ab Hotel</a></div></article>`).join(''):'<div class="no-results">Keine Restaurants für diesen Filter.</div>';
+      root.querySelectorAll('.food-card').forEach(card=>{
+        card.addEventListener('click',e=>{if(e.target.closest('a'))return;selectSpot(Number(card.dataset.id),true);});
+        card.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('a')){e.preventDefault();selectSpot(Number(card.dataset.id),true);}});
       });
-      // Leaflet needs a fresh size measurement if the viewport changes orientation.
-      window.addEventListener('resize',()=>map.invalidateSize(),{passive:true});
-    } else {
-      document.getElementById('map-reset').disabled=true;
-      gestureButton.disabled=true;
+      updateMap();
     }
-    render(true);
+    function selectSpot(id,scroll){
+      selected=id;render();
+      if(scroll&&window.matchMedia('(max-width:760px)').matches)
+        document.querySelector('.map-panel').scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    document.querySelectorAll('.chip').forEach(button=>button.addEventListener('click',()=>{
+      document.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));
+      button.classList.add('active');filter=button.dataset.filter;render();
+    }));
+    document.getElementById('sort').addEventListener('change',e=>{sort=e.target.value;render();});
+    providerButton.addEventListener('click',()=>{provider=provider==='google'?'osm':'google';updateMap();});
+    document.getElementById('share').addEventListener('click',async()=>{
+      const data={title:'Leipzig Bites – Food Map',text:'8 besondere Restaurants in Leipzig mit Karte und Preisvergleich',url:location.href};
+      try{
+        if(navigator.share)await navigator.share(data);
+        else if(navigator.clipboard){
+          await navigator.clipboard.writeText(location.href);
+          const label=document.querySelector('#share span');
+          if(label){label.textContent='Link kopiert ✓';setTimeout(()=>label.textContent='Liste teilen',2200);}
+        }
+      }catch(e){if(e.name!=='AbortError')alert('Bitte den Link aus der Adresszeile teilen.');}
+    });
+    render();
   </script>
   <script type="module" src="./votes.js"></script>
 </body>
