@@ -33,3 +33,7 @@
 .vote-privacy{font-size:11px;color:var(--muted);margin:13px 0 0}
 @media(max-width:800px){.vote-layout{grid-template-columns:1fr}.vote-section{padding:22px 17px}.vote-intro{align-items:start;flex-direction:column}.vote-choices{grid-template-columns:1fr 1fr}}
 @media(max-width:430px){.vote-choices{grid-template-columns:1fr}.vote-results-wrap{padding:16px}}
+
+.vote-jump{color:white;text-decoration:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.09);border-radius:100px;padding:10px 17px;font-weight:800;font-size:12px;white-space:nowrap;margin-left:auto;margin-right:10px}
+.vote-jump:hover{background:rgba(255,255,255,.18)}
+@media(max-width:430px){.vote-jump{padding:9px 10px;font-size:11px;margin-right:6px}.vote-jump{letter-spacing:-.2px}}
