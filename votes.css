@@ -1,0 +1,35 @@
+/* Leipzig Bites – Abstimmung */
+.vote-section{margin:46px 0 54px;padding:31px;background:var(--surface);border:1px solid var(--line);border-radius:25px;box-shadow:var(--shadow)}
+.vote-intro{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:23px}
+.vote-intro h2{margin:0;font:700 clamp(25px,3vw,36px) 'Space Grotesk',sans-serif;letter-spacing:-1.1px}
+.vote-intro p{margin:6px 0 0;color:var(--muted)}
+.vote-count{white-space:nowrap;background:#eaf2ec;color:var(--forest);font-weight:800;border-radius:50px;padding:9px 14px;font-size:13px}
+.vote-layout{display:grid;grid-template-columns:minmax(300px,.95fr) minmax(300px,1.05fr);gap:34px}
+.vote-form .label{display:block;font-size:12px;font-weight:800;margin-bottom:8px;letter-spacing:.3px}
+.vote-name{width:100%;border:1px solid #d4dcd4;border-radius:12px;background:white;padding:13px 14px;outline-offset:3px;max-width:420px}
+.vote-prompt{font-weight:800;margin:19px 0 11px;font-size:13px}
+.vote-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.vote-choice{cursor:pointer;border:1px solid #e1e6df;border-radius:12px;background:white;min-width:0;padding:11px 12px;display:flex;gap:9px;align-items:center}
+.vote-choice:has(input:checked){border-color:var(--forest);background:#edf5f0}
+.vote-choice input{accent-color:var(--forest);flex:none}
+.vote-choice-name{font-size:12px;font-weight:800;min-width:0}
+.vote-choice-price{margin-left:auto;color:var(--muted);font-size:10px;white-space:nowrap}
+.vote-buttons{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:19px}
+.vote-primary{background:var(--forest);border:1px solid var(--forest);color:white;padding:12px 18px;border-radius:12px;font-weight:800;cursor:pointer}
+.vote-primary:hover:not(:disabled){background:#32685a}
+.vote-primary:disabled{opacity:.45;cursor:not-allowed}
+.vote-remove{border:1px solid #e1e6df;background:white;border-radius:12px;color:#59645b;padding:12px 16px;cursor:pointer}
+.vote-status{margin:10px 0 0;color:var(--muted);font-size:12px;min-height:34px}
+.vote-status.error{color:#ad3729}
+.vote-results-wrap{padding:22px;border-radius:18px;background:#f1f3ee;min-width:0}
+.vote-results-title{margin:0 0 15px;font:700 19px 'Space Grotesk',sans-serif}
+.vote-results{display:grid;gap:14px}
+.vote-result-top{display:flex;justify-content:space-between;gap:12px;font-size:12px;margin-bottom:6px}
+.vote-result-top strong{font-weight:800}
+.vote-result-top span{color:#6a776d;white-space:nowrap;font-variant-numeric:tabular-nums}
+.vote-track{background:#dfe6de;height:8px;border-radius:99px;overflow:hidden}
+.vote-fill{background:var(--accent);height:100%;border-radius:99px;transition:width .3s}
+.vote-voters{display:block;font-size:10px;color:#758079;line-height:1.5;margin-top:5px;overflow-wrap:anywhere}
+.vote-privacy{font-size:11px;color:var(--muted);margin:13px 0 0}
+@media(max-width:800px){.vote-layout{grid-template-columns:1fr}.vote-section{padding:22px 17px}.vote-intro{align-items:start;flex-direction:column}.vote-choices{grid-template-columns:1fr 1fr}}
+@media(max-width:430px){.vote-choices{grid-template-columns:1fr}.vote-results-wrap{padding:16px}}
