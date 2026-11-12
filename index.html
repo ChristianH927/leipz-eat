@@ -28,6 +28,45 @@
     @media(max-width:1040px){.wrap{padding:0 22px}.layout{grid-template-columns:minmax(0,1fr) minmax(330px,1fr)}.hero h1{letter-spacing:-3.5px}.food-card{padding:16px 15px}.description,.details,.actions{margin-left:0}.details{gap:1px}}
     @media(max-width:760px){.wrap{padding:0 16px}.topline{height:67px}.logo{font-size:19px}.logo-emoji{height:35px;width:35px}.share{padding:9px 11px}.share span{display:none}.hero{padding:36px 0 54px;grid-template-columns:1fr}.hero h1{font-size:51px;letter-spacing:-3px}.hero p{font-size:14px}.hero-sticker{display:none}.location-strip{margin-top:-23px;gap:8px}.location-box{flex:1;min-width:150px;padding:12px;gap:8px}.location-box .pict{width:33px;height:33px;font-size:16px}.location-box b{font-size:12px}.location-box small{font-size:10px}.section-top{margin-top:30px;display:block}.section-title{font-size:25px}.filters{margin-top:17px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.chip{flex-shrink:0}.layout{display:flex;flex-direction:column;gap:12px}.map-panel{width:100%;height:385px;position:relative;top:0;border-radius:18px}.map-overlay{top:12px;left:12px;padding:9px 11px}.map-legend{left:12px;bottom:12px}.list-panel{width:100%}.list-top{padding:12px 3px}.food-card{padding:17px}.description,.details,.actions{margin-left:0}.footer{flex-direction:column;gap:6px}.country{margin-left:0}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+    /* Karte zuerst – kompakter Kopf und mobile Kartenbedienung */
+    .site-header:before{display:none}
+    .topline{height:60px;border-bottom:0}
+    .layout{padding:12px 0 32px;grid-template-columns:minmax(0,1.1fr) minmax(360px,.9fr);gap:18px}
+    .map-panel{height:min(690px,calc(100svh - 90px));min-height:520px;top:12px}
+    .map-overlay{top:14px;left:14px;padding:10px 13px;z-index:500}
+    .map-legend{top:14px;right:14px;bottom:auto;left:auto;z-index:500}
+    .map-actions{position:absolute;left:14px;bottom:17px;z-index:500;display:flex;align-items:center;gap:7px}
+    .map-actions button,.map-actions a{background:#fffefa;border:1px solid #e3e7df;border-radius:11px;color:var(--forest);font-weight:800;font-size:12px;padding:10px 12px;text-decoration:none;box-shadow:0 3px 13px #0002;cursor:pointer}
+    .map-actions button:hover,.map-actions a:hover{background:#e9f1eb}
+    #map-gesture{display:none}
+    .list-heading{padding:3px 2px 12px}
+    .list-heading h1{font:700 25px 'Space Grotesk',sans-serif;letter-spacing:-1px;margin:0 0 4px}
+    .list-heading p{margin:0;color:var(--muted);font-size:12px}
+    .list-panel>.filters{display:flex;gap:7px;flex-wrap:wrap;padding:6px 2px 17px}
+    .list-panel>.filters .chip{padding:9px 12px}
+    .list-top{padding:0 2px 8px}
+    .leaflet-container{background:#e1e9e3}
+    .map-panel:focus-within{outline-offset:2px}
+    @media(max-width:760px){
+      .wrap{padding:0 12px}
+      .topline{height:58px}
+      .layout{display:flex;flex-direction:column;gap:15px;padding:0 0 26px}
+      .map-panel{height:clamp(340px,57svh,520px);min-height:0;position:relative;top:0;width:calc(100% + 24px);margin:0 -12px;border:0;border-radius:0 0 18px 18px}
+      .map-legend{top:13px;right:9px;gap:7px;padding:8px;font-size:10px}
+      .map-overlay{left:10px;top:10px;max-width:170px;padding:8px 9px}
+      .map-overlay b{font-size:11px}
+      .map-overlay small{font-size:10px}
+      .map-actions{bottom:14px;left:10px;gap:6px}
+      .map-actions button,.map-actions a{padding:9px 10px;font-size:11px}
+      #map-gesture{display:inline-flex}
+      .list-panel{width:100%}
+      .list-heading h1{font-size:22px}
+      .list-panel>.filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:15px}
+      .list-panel>.filters .chip{flex:none}
+      .leaflet-control-zoom{margin-bottom:49px!important}
+    }
+    @media(max-width:390px){.logo{font-size:17px;gap:6px}.logo-emoji{width:32px;height:32px;font-size:18px}.topline{height:55px}.map-legend{display:none}}
   </style>
   <link rel="stylesheet" href="./votes.css">
 </head>
@@ -35,18 +74,22 @@
   <header class="site-header">
     <div class="wrap">
       <div class="topline"><div class="logo"><span class="logo-emoji">🍜</span> LEIPZIG <span>BITES.</span></div><a class="vote-jump" href="#abstimmung" aria-label="Zur Restaurantabstimmung">🗳️ Abstimmen</a><button id="share" class="share" type="button" aria-label="Diese Seite teilen"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V2m0 0L7 7m5-5 5 5"/><path d="M4 13v6a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-6"/></svg><span>Liste teilen</span></button></div>
-      <div class="hero"><div><div class="eyebrow">Food Guide · Leipzig</div><h1>Gut essen.<br><i>Anders essen.</i></h1><p>8 besondere Spots zwischen Streetfood, Levante und DDR-Küche. Mit Karte, Preisen und Entfernungsvergleich.</p></div><div class="hero-sticker"><strong>08</strong><span>Food Spots<br>to try!</span></div></div>
     </div>
   </header>
   <div class="wrap">
-    <section class="location-strip" aria-label="Ausgangspunkte">
-      <div class="location-box"><span class="pict">🏨</span><div><b>ibis Leipzig City</b><small>Reichsstraße 17 · Zentrum</small></div></div>
-      <div class="location-box dim"><span class="pict">📍</span><div><b>Domdidom</b><small>Entfernungsvergleich · ohne Adresse</small></div></div>
-    </section>
-    <section class="section-top"><div><h2 class="section-title">The food shortlist <span style="font-size:20px">✳</span></h2><p class="subline">Einfach Restaurant auswählen → Karte, Details und Navigation.</p></div><div class="filters" role="group" aria-label="Restaurants filtern"><button class="chip active" data-filter="all">Alle 8</button><button class="chip" data-filter="hotel">Nähe Hotel</button><button class="chip" data-filter="dom">Nähe Domdidom</button><button class="chip" data-filter="cheap">Einstieg ≤ 15 €</button></div></section>
     <div class="layout">
-      <div class="map-panel" aria-label="Karte mit Restaurants und Hotel"><div id="map"></div><div class="map-overlay"><b>🗺️ Food Map</b><small id="map-note">8 Restaurants · Leipzig</small></div><div class="map-legend"><span><span class="legend-mark"></span> Restaurant</span><span><span class="legend-mark hotel"></span> Hotel</span></div></div>
-      <section class="list-panel" aria-label="Restaurantliste"><div class="list-top"><b id="count">8 Restaurants</b><select class="sort" id="sort" aria-label="Sortierung"><option value="default">Unsere Reihenfolge ▾</option><option value="hotel">Distanz: Hotel</option><option value="dom">Distanz: Domdidom</option><option value="price">Preis aufsteigend</option></select></div><div class="cards" id="cards"></div></section>
+      <div class="map-panel" aria-label="Interaktive Karte mit Restaurants und Hotel">
+        <div id="map"></div>
+        <div class="map-overlay"><b>🗺️ Leipzig Food Map</b><small id="map-note">8 Restaurants · Leipzig</small></div>
+        <div class="map-legend"><span><span class="legend-mark"></span> Restaurant</span><span><span class="legend-mark hotel"></span> Hotel</span></div>
+        <div class="map-actions"><button id="map-reset" type="button" title="Alle Restaurants auf der Karte anzeigen">◎ Alle zeigen</button><button id="map-gesture" type="button" aria-pressed="false">✋ Karte bewegen</button><a href="#restaurants">☰ Liste</a></div>
+      </div>
+      <section class="list-panel" id="restaurants" aria-label="Restaurantliste">
+        <div class="list-heading"><div><h1>8 Restaurants in Leipzig</h1><p>Preise und Wege ab Hotel und Domdidom</p></div></div>
+        <div class="list-top"><b id="count">8 Restaurants</b><select class="sort" id="sort" aria-label="Sortierung"><option value="default">Unsere Reihenfolge ▾</option><option value="hotel">Distanz: Hotel</option><option value="dom">Distanz: Domdidom</option><option value="price">Preis aufsteigend</option></select></div>
+        <div class="filters" role="group" aria-label="Restaurants filtern"><button class="chip active" data-filter="all">Alle 8</button><button class="chip" data-filter="hotel">Nähe Hotel</button><button class="chip" data-filter="dom">Nähe Domdidom</button><button class="chip" data-filter="cheap">Bis 15 €</button></div>
+        <div class="cards" id="cards"></div>
+      </section>
     </div>
 
     <section id="abstimmung" class="vote-section" aria-labelledby="vote-title">
@@ -97,25 +140,40 @@
     const fmtKm = n => '~'+String(n).replace('.',',')+' km';
     let filter='all',sort='default',selected=null,shown=restaurants.slice(),map,markers={};
     if (window.L){
-      map=L.map('map',{zoomControl:false,scrollWheelZoom:false}).setView([51.336,12.369],13);
+      map=L.map('map',{zoomControl:false,scrollWheelZoom:false,dragging:!window.matchMedia('(max-width:760px) and (pointer:coarse)').matches,scrollWheelZoom:false,touchZoom:true,zoomSnap:.5}).setView([51.336,12.369],13);
       L.control.zoom({position:'bottomright'}).addTo(map);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',maxZoom:19}).addTo(map);
       const icon=(n,active=false,hotelPin=false)=>L.divIcon({className:'',html:`<div class="pin-wrap ${active?'active':''} ${hotelPin?'hotel-pin':''}"><span class="pin-num">${hotelPin?'⌂':String(n).padStart(2,'0')}</span></div>`,iconSize:[hotelPin?43:active?44:38,hotelPin?43:active?44:38],iconAnchor:[hotelPin?21:active?22:19,hotelPin?37:active?38:33]});
       const h=L.marker([hotel.lat,hotel.lon],{icon:icon('',false,true)}).addTo(map).bindPopup('<b>🏨 ibis Leipzig City</b><br>Reichsstraße 17 · Ausgangspunkt');
-      restaurants.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:icon(p.id)}).addTo(map);m.bindPopup(`<div class="popup-title">${p.name}</div><div class="popup-sub">${p.cuisine} · ${p.price}</div><a class="popup-link" href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a>`);m.on('click',()=>selectSpot(p.id,false));markers[p.id]=m;});
+      restaurants.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:icon(p.id)}).addTo(map);m.bindPopup(`<div class="popup-title">${p.name}</div><div class="popup-sub">${p.cuisine} · ${p.price}</div><a class="popup-link" href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">In Google Maps öffnen ↗</a><a class="popup-link" style="margin-left:12px" href="#spot-${p.id}">Zur Liste ↓</a>`);m.on('click',()=>selectSpot(p.id,false));markers[p.id]=m;});
     } else {
       document.getElementById('map').innerHTML='<div style="padding:70px 25px;text-align:center;color:#53625a">Karte nicht verfügbar. Die Restaurantlinks funktionieren weiterhin.</div>';
     }
     function getList(){let a=restaurants.filter(p=>filter==='all'||(filter==='hotel'&&p.hotel<=2.5)||(filter==='dom'&&p.dom<=2)||(filter==='cheap'&&p.min<=15));if(sort==='hotel')a.sort((x,y)=>x.hotel-y.hotel);if(sort==='dom')a.sort((x,y)=>x.dom-y.dom);if(sort==='price')a.sort((x,y)=>x.min-y.min);return a;}
-    function render(){shown=getList();const root=document.getElementById('cards');document.getElementById('count').textContent=shown.length+' Restaurant'+(shown.length===1?'':'s');document.getElementById('map-note').textContent=shown.length+' Restaurants · Leipzig';root.innerHTML=shown.length?shown.map(p=>`<article class="food-card ${selected===p.id?'selected':''}" data-id="${p.id}" tabindex="0" role="button" aria-label="${p.name} auf der Karte zeigen"><div class="card-heading"><span class="num">${String(p.id).padStart(2,'0')}</span><div class="card-main"><h3>${p.name}</h3><div class="tagline">${p.cuisine}</div></div><span class="country" aria-hidden="true">${p.country}</span></div><p class="description">${p.detail}</p><div class="details"><div><strong>${p.price}</strong><small>Preis pro Person</small></div><div><strong>${fmtKm(p.dom)}</strong><small>von Domdidom</small></div><div><strong>${fmtKm(p.hotel)}</strong><small>vom Hotel</small></div></div><div class="actions"><a href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">↗ Google Maps</a><a class="secondary" href="${directions(p)}" target="_blank" rel="noopener noreferrer">↗ Fußweg ab Hotel</a></div></article>`).join(''):'<div class="no-results">Keine Restaurants für diesen Filter.</div>';
+    function render(fitMap=false){shown=getList();const root=document.getElementById('cards');document.getElementById('count').textContent=shown.length+' Restaurant'+(shown.length===1?'':'s');document.getElementById('map-note').textContent=shown.length+' Restaurants · Leipzig';root.innerHTML=shown.length?shown.map(p=>`<article class="food-card ${selected===p.id?'selected':''}" id="spot-${p.id}" data-id="${p.id}" tabindex="0" role="button" aria-label="${p.name} auf der Karte zeigen"><div class="card-heading"><span class="num">${String(p.id).padStart(2,'0')}</span><div class="card-main"><h3>${p.name}</h3><div class="tagline">${p.cuisine}</div></div><span class="country" aria-hidden="true">${p.country}</span></div><p class="description">${p.detail}</p><div class="details"><div><strong>${p.price}</strong><small>Preis pro Person</small></div><div><strong>${fmtKm(p.dom)}</strong><small>von Domdidom</small></div><div><strong>${fmtKm(p.hotel)}</strong><small>vom Hotel</small></div></div><div class="actions"><a href="${googleSearch(p)}" target="_blank" rel="noopener noreferrer">↗ Google Maps</a><a class="secondary" href="${directions(p)}" target="_blank" rel="noopener noreferrer">↗ Fußweg ab Hotel</a></div></article>`).join(''):'<div class="no-results">Keine Restaurants für diesen Filter.</div>';
       root.querySelectorAll('.food-card').forEach(c=>{c.addEventListener('click',e=>{if(e.target.closest('a'))return;selectSpot(Number(c.dataset.id),true)});c.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&!e.target.closest('a')){e.preventDefault();selectSpot(Number(c.dataset.id),true)}})});
-      if(map){const allMarkers=[L.latLng(hotel.lat,hotel.lon)];restaurants.forEach(p=>{const m=markers[p.id];const visible=shown.some(q=>q.id===p.id);if(visible){m.addTo(map);allMarkers.push(L.latLng(p.lat,p.lon))}else map.removeLayer(m);m.setIcon(L.divIcon({className:'',html:`<div class="pin-wrap ${selected===p.id?'active':''}"><span class="pin-num">${String(p.id).padStart(2,'0')}</span></div>`,iconSize:[selected===p.id?44:38,selected===p.id?44:38],iconAnchor:[selected===p.id?22:19,selected===p.id?38:33]}));});if(allMarkers.length>1)map.fitBounds(L.latLngBounds(allMarkers).pad(.14),{maxZoom:15,animate:false});}
+      if(map){const allMarkers=[L.latLng(hotel.lat,hotel.lon)];restaurants.forEach(p=>{const m=markers[p.id];const visible=shown.some(q=>q.id===p.id);if(visible){m.addTo(map);allMarkers.push(L.latLng(p.lat,p.lon))}else map.removeLayer(m);m.setIcon(L.divIcon({className:'',html:`<div class="pin-wrap ${selected===p.id?'active':''}"><span class="pin-num">${String(p.id).padStart(2,'0')}</span></div>`,iconSize:[selected===p.id?44:38,selected===p.id?44:38],iconAnchor:[selected===p.id?22:19,selected===p.id?38:33]}));});if(fitMap&&allMarkers.length>1){map.invalidateSize();map.fitBounds(L.latLngBounds(allMarkers),{padding:[34,34],maxZoom:14,animate:false});}}
     }
-    function selectSpot(id,scroll){selected=id;render();const p=restaurants.find(p=>p.id===id);if(map&&p){map.setView([p.lat,p.lon],15,{animate:true});markers[id].openPopup()}if(scroll&&window.matchMedia('(max-width:760px)').matches)document.querySelector('.map-panel').scrollIntoView({behavior:'smooth',block:'center'});}
-    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;selected=null;render()}));
+    function selectSpot(id,scroll){selected=id;render();const p=restaurants.find(p=>p.id===id);if(map&&p){map.setView([p.lat,p.lon],window.matchMedia('(max-width:760px)').matches?14:15,{animate:true});markers[id].openPopup()}if(scroll&&window.matchMedia('(max-width:760px)').matches)document.querySelector('.map-panel').scrollIntoView({behavior:'smooth',block:'center'});}
+    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));b.classList.add('active');filter=b.dataset.filter;selected=null;render(true)}));
     document.getElementById('sort').addEventListener('change',e=>{sort=e.target.value;render()});
     document.getElementById('share').addEventListener('click',async()=>{const data={title:'Leipzig Bites – Food Map',text:'8 besondere Restaurants in Leipzig mit Karte und Preisvergleich',url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);const b=document.querySelector('#share span');if(b){const before=b.textContent;b.textContent='Link kopiert ✓';setTimeout(()=>b.textContent=before,2200)}}}catch(e){if(e.name!=='AbortError')alert('Bitte den Link aus der Adresszeile teilen.')}});
-    render();
+    document.getElementById('map-reset').addEventListener('click',()=>{selected=null;render(true);if(map)map.closePopup();});
+    const gestureButton=document.getElementById('map-gesture');
+    if(map) {
+      gestureButton.addEventListener('click',()=>{
+        const enabled=!map.dragging.enabled();
+        enabled?map.dragging.enable():map.dragging.disable();
+        gestureButton.setAttribute('aria-pressed',String(enabled));
+        gestureButton.textContent=enabled?'✓ Karte fixieren':'✋ Karte bewegen';
+      });
+      // Leaflet needs a fresh size measurement if the viewport changes orientation.
+      window.addEventListener('resize',()=>map.invalidateSize(),{passive:true});
+    } else {
+      document.getElementById('map-reset').disabled=true;
+      gestureButton.disabled=true;
+    }
+    render(true);
   </script>
   <script type="module" src="./votes.js"></script>
 </body>
