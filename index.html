@@ -29,6 +29,7 @@
     @media(max-width:760px){.wrap{padding:0 16px}.topline{height:67px}.logo{font-size:19px}.logo-emoji{height:35px;width:35px}.share{padding:9px 11px}.share span{display:none}.hero{padding:36px 0 54px;grid-template-columns:1fr}.hero h1{font-size:51px;letter-spacing:-3px}.hero p{font-size:14px}.hero-sticker{display:none}.location-strip{margin-top:-23px;gap:8px}.location-box{flex:1;min-width:150px;padding:12px;gap:8px}.location-box .pict{width:33px;height:33px;font-size:16px}.location-box b{font-size:12px}.location-box small{font-size:10px}.section-top{margin-top:30px;display:block}.section-title{font-size:25px}.filters{margin-top:17px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}.chip{flex-shrink:0}.layout{display:flex;flex-direction:column;gap:12px}.map-panel{width:100%;height:385px;position:relative;top:0;border-radius:18px}.map-overlay{top:12px;left:12px;padding:9px 11px}.map-legend{left:12px;bottom:12px}.list-panel{width:100%}.list-top{padding:12px 3px}.food-card{padding:17px}.description,.details,.actions{margin-left:0}.footer{flex-direction:column;gap:6px}.country{margin-left:0}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
+  <link rel="stylesheet" href="./votes.css">
 </head>
 <body>
   <header class="site-header">
@@ -47,6 +48,31 @@
       <div class="map-panel" aria-label="Karte mit Restaurants und Hotel"><div id="map"></div><div class="map-overlay"><b>🗺️ Food Map</b><small id="map-note">8 Restaurants · Leipzig</small></div><div class="map-legend"><span><span class="legend-mark"></span> Restaurant</span><span><span class="legend-mark hotel"></span> Hotel</span></div></div>
       <section class="list-panel" aria-label="Restaurantliste"><div class="list-top"><b id="count">8 Restaurants</b><select class="sort" id="sort" aria-label="Sortierung"><option value="default">Unsere Reihenfolge ▾</option><option value="hotel">Distanz: Hotel</option><option value="dom">Distanz: Domdidom</option><option value="price">Preis aufsteigend</option></select></div><div class="cards" id="cards"></div></section>
     </div>
+
+    <section id="abstimmung" class="vote-section" aria-labelledby="vote-title">
+      <div class="vote-intro">
+        <div><div class="eyebrow" style="color:var(--forest)">Gemeinsam entscheiden</div><h2 id="vote-title">Wo gehen wir essen?</h2><p>Ein Name, eine Stimme. Live sehen, was vorne liegt.</p></div>
+        <span class="vote-count" id="vote-total">0 Stimmen</span>
+      </div>
+      <div class="vote-layout">
+        <form id="vote-form" class="vote-form">
+          <label class="label" for="vote-name">Dein Name</label>
+          <input id="vote-name" class="vote-name" type="text" minlength="2" maxlength="30" autocomplete="nickname" placeholder="Zum Beispiel: Christian" required>
+          <div class="vote-prompt">Wähle deinen Favoriten</div>
+          <div class="vote-choices" id="vote-choices" role="group" aria-label="Restaurant auswählen"></div>
+          <div class="vote-buttons">
+            <button id="vote-submit" class="vote-primary" type="submit" disabled>Jetzt abstimmen</button>
+            <button id="vote-delete" class="vote-remove" type="button" hidden>Stimme entfernen</button>
+          </div>
+          <p class="vote-status" id="vote-status" role="status" aria-live="polite">Die Abstimmung wird geladen …</p>
+        </form>
+        <div class="vote-results-wrap">
+          <h3 class="vote-results-title">Live-Ergebnis</h3>
+          <div class="vote-results" id="vote-results" aria-live="polite"></div>
+          <p class="vote-privacy">Namen und Stimmen sind für Besucher sichtbar. Mit demselben Browser kannst du deine Stimme ändern oder entfernen.</p>
+        </div>
+      </div>
+    </section>
     <footer class="footer"><span>© Leipzig Bites · Privater Restaurant-Guide · Preise und Entfernungen sind unverbindliche Richtwerte.</span><span>Kartendaten: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap</a> · Navigation über Google Maps</span></footer>
   </div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -65,6 +91,7 @@
       {id:7,name:'Yiyi’s Korean Kitchen',country:'🇰🇷',cuisine:'Koreanisch',detail:'Bibimbap, Ramen & koreanische Snacks',price:'12–16 €',min:12,hotel:2.5,dom:6,address:'Karl-Liebknecht-Straße 66, 04275 Leipzig',lat:51.3209,lon:12.3735},
       {id:8,name:'Basasak Korean Corndog',country:'🇰🇷',cuisine:'Korean Streetfood',detail:'Knusprige Corn Dogs & koreanisches Chicken',price:'7–10 €',min:7,hotel:3,dom:7,address:'Dresdner Straße 58, 04317 Leipzig',lat:51.3388,lon:12.4074}
     ];
+    window.LEIPZIG_RESTAURANTS = restaurants;
     const googleSearch = p => 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(p.name+' '+p.address);
     const directions = p => 'https://www.google.com/maps/dir/?api=1&origin='+encodeURIComponent(hotel.address)+'&destination='+encodeURIComponent(p.name+' '+p.address)+'&travelmode=walking';
     const fmtKm = n => '~'+String(n).replace('.',',')+' km';
@@ -90,5 +117,6 @@
     document.getElementById('share').addEventListener('click',async()=>{const data={title:'Leipzig Bites – Food Map',text:'8 besondere Restaurants in Leipzig mit Karte und Preisvergleich',url:location.href};try{if(navigator.share)await navigator.share(data);else if(navigator.clipboard){await navigator.clipboard.writeText(location.href);const b=document.querySelector('#share span');if(b){const before=b.textContent;b.textContent='Link kopiert ✓';setTimeout(()=>b.textContent=before,2200)}}}catch(e){if(e.name!=='AbortError')alert('Bitte den Link aus der Adresszeile teilen.')}});
     render();
   </script>
+  <script type="module" src="./votes.js"></script>
 </body>
 </html>
